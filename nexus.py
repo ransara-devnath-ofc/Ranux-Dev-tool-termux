@@ -4,55 +4,64 @@ import time
 import socket
 import platform
 import requests
+import phonenumbers
+from phonenumbers import geocoder, carrier
 from colorama import Fore, Style, init
 
 init(autoreset=True)
 
-class Colors:
-    CYAN = Fore.CYAN
-    GREEN = Fore.LIGHTGREEN_EX
-    RED = Fore.LIGHTRED_EX
-    YELLOW = Fore.YELLOW
-    WHITE = Fore.WHITE
-    RESET = Style.RESET_ALL
+class C:
+    C = Fore.CYAN
+    G = Fore.LIGHTGREEN_EX
+    R = Fore.LIGHTRED_EX
+    Y = Fore.YELLOW
+    W = Fore.WHITE
+    M = Fore.MAGENTA
+    B = Fore.LIGHTBLUE_EX
+    X = Style.RESET_ALL
 
-def typewriter(text, speed=0.015):
+def type_text(text, speed=0.01):
     for char in text:
         sys.stdout.write(char)
         sys.stdout.flush()
         time.sleep(speed)
     print()
 
-def spinner_animation(duration, message):
-    spinner_chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
-    end_time = time.time() + duration
-    idx = 0
-    while time.time() < end_time:
-        sys.stdout.write(f"\r{Colors.CYAN}[{spinner_chars[idx]}] {Colors.WHITE}{message}")
+def rainbow_banner():
+    art = """
+  _   _  ______ __  __ _    _  _____ 
+ | \ | ||  ____|\ \/ /| |  | |/ ____|
+ |  \| || |__    \  / | |  | | (___  
+ | . ` ||  __|   /  \ | |  | |\___ \ 
+ | |\  || |____ / /\ \| |__| |____) |
+ |_| \_||______/_/  \_\\\\____/|_____/ 
+    """
+    colors = [C.R, C.Y, C.G, C.C, C.B, C.M]
+    lines = art.split("\n")
+    for i, line in enumerate(lines):
+        print(colors[i % len(colors)] + line)
+    print(C.X)
+
+def spinner(dur, msg):
+    chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+    end = time.time() + dur
+    i = 0
+    while time.time() < end:
+        sys.stdout.write(f"\r{C.C}[{chars[i]}] {C.W}{msg}")
         sys.stdout.flush()
-        idx = (idx + 1) % len(spinner_chars)
+        i = (i + 1) % len(chars)
         time.sleep(0.1)
-    sys.stdout.write(f"\r{Colors.GREEN}[✔] {message} - Complete!      \n")
+    sys.stdout.write(f"\r{C.G}[✔] {msg} - Done!      \n")
     sys.stdout.flush()
 
-def progress_bar():
-    total_blocks = 30
-    sys.stdout.write(f"{Colors.CYAN}Loading Core Modules: [")
-    for i in range(total_blocks):
-        sys.stdout.write(f"{Colors.GREEN}█")
-        sys.stdout.flush()
-        time.sleep(0.04)
-    sys.stdout.write(f"{Colors.CYAN}]{Colors.RESET}\n")
-
-def boot_sequence():
+def boot():
     os.system('clear' if os.name == 'posix' else 'cls')
-    typewriter(f"{Colors.GREEN}[+] Initializing Target Sockets...")
-    typewriter(f"{Colors.GREEN}[+] Bypassing Gateway Protocols...")
-    spinner_animation(2, "Establishing Secure Connection")
-    progress_bar()
+    type_text(f"{C.G}[+] Starting System...")
+    type_text(f"{C.G}[+] Loading Modules...")
+    spinner(2, "Connecting to Network")
     time.sleep(0.5)
 
-def get_local_ip():
+def get_ip():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -62,170 +71,240 @@ def get_local_ip():
     except Exception:
         return "127.0.0.1"
 
-def show_banner():
+def header():
     os.system('clear' if os.name == 'posix' else 'cls')
-    banner_art = f"""{Colors.RED}
-  _   _  ______ __  __ _    _  _____ 
- | \\ | ||  ____|\\ \\/ /| |  | |/ ____|
- |  \\| || |__    \\  / | |  | | (___  
- | . ` ||  __|   /  \\ | |  | |\\___ \\ 
- | |\\  || |____ / /\\ \\| |__| |____) |
- |_| \\_||______/_/  \\_\\\\____/|_____/ 
-    """
-    print(banner_art)
-    print(f"{Colors.CYAN}┌──────────────────────────────────────────┐")
-    print(f"{Colors.CYAN}│ {Colors.YELLOW}👑 DEVELOPER : RANUX DEV                 {Colors.CYAN}│")
-    print(f"{Colors.CYAN}├──────────────────────────────────────────┤")
-    print(f"{Colors.CYAN}│ {Colors.GREEN}STATUS  : {Colors.WHITE}ACTIVE / SECURE              {Colors.CYAN}│")
-    print(f"{Colors.CYAN}│ {Colors.GREEN}HOST IP : {Colors.WHITE}{get_local_ip():<26} {Colors.CYAN}│")
-    print(f"{Colors.CYAN}│ {Colors.GREEN}SYSTEM  : {Colors.WHITE}{platform.system()[:26]:<26} {Colors.CYAN}│")
-    print(f"{Colors.CYAN}└──────────────────────────────────────────┘\n")
+    rainbow_banner()
+    print(f"{C.C}╭──────────────────────────────────────────╮")
+    print(f"{C.C}│ {C.Y}👑 DEVELOPER : RANUX DEV                 {C.C}│")
+    print(f"{C.C}├──────────────────────────────────────────┤")
+    print(f"{C.C}│ {C.G}STATUS  : {C.W}ACTIVE                       {C.C}│")
+    print(f"{C.C}│ {C.G}HOST IP : {C.W}{get_ip():<26} {C.C}│")
+    print(f"{C.C}│ {C.G}SYSTEM  : {C.W}{platform.system()[:26]:<26} {C.C}│")
+    print(f"{C.C}╰──────────────────────────────────────────╯\n")
 
-def recon_module():
-    show_banner()
-    print(f"{Colors.CYAN}┌───[{Colors.WHITE} TARGET RECONNAISSANCE {Colors.CYAN}]")
-    target = input(f"│\n└──► {Colors.YELLOW}Enter Target Domain (eg: domain.com): {Colors.WHITE}").strip()
-    
+def mod_domain():
+    header()
+    print(f"{C.C}╭───〔 𝗗𝗼𝗺𝗮𝗶𝗻 𝗥𝗲𝗰𝗼𝗻𝗻𝗮𝗶𝘀𝘀𝗮𝗻𝗰𝗲 〕")
+    target = input(f"{C.C}│\n╰──► {C.Y}Enter Web Domain: {C.W}").strip()
     if not target:
-        print(f"\n{Colors.RED}[✖] Invalid Target.")
-        time.sleep(2)
         return
-
-    print(f"\n{Colors.GREEN}[+] Target Locked: {target}")
-    spinner_animation(3, "Querying crt.sh public transparency logs")
-
-    url = f"https://crt.sh/?q=%.{target}&output=json"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Nexus/1.0'}
-    
+    print(f"\n{C.G}[+] Target: {target}")
+    spinner(2, "Finding web data")
+    subs = set()
     try:
-        response = requests.get(url, headers=headers, timeout=15)
-        if response.status_code == 200:
-            data = response.json()
-            subdomains = set()
-            for entry in data:
-                name_value = entry.get('name_value', '')
-                for sub in name_value.split('\n'):
+        res = requests.get(f"https://api.hackertarget.com/hostsearch/?q={target}", timeout=10)
+        if res.status_code == 200 and "error" not in res.text.lower():
+            for line in res.text.split('\n'):
+                if ',' in line:
+                    sub = line.split(',')[0].strip().lower()
+                    if sub and '*' not in sub:
+                        subs.add(sub)
+    except Exception:
+        pass
+    try:
+        res = requests.get(f"https://crt.sh/?q=%.{target}&output=json", timeout=10)
+        if res.status_code == 200:
+            for item in res.json():
+                for sub in item.get('name_value', '').split('\n'):
                     sub = sub.strip().lower()
-                    if '*' not in sub and sub != target:
-                        subdomains.add(sub)
-            
-            sub_list = sorted(list(subdomains))
-            print(f"\n{Colors.CYAN}┌──────────────────────────────────────────┐")
-            print(f"{Colors.CYAN}│ {Colors.GREEN}FOUND {len(sub_list)} SUBDOMAINS{Colors.CYAN}")
-            print(f"{Colors.CYAN}├──────────────────────────────────────────┤")
-            for sub in sub_list[:15]: 
-                print(f"{Colors.CYAN}│ {Colors.WHITE}► {sub}")
-            if len(sub_list) > 15:
-                print(f"{Colors.CYAN}│ {Colors.YELLOW}... and {len(sub_list) - 15} more.")
-            print(f"{Colors.CYAN}└──────────────────────────────────────────┘")
-        else:
-            print(f"{Colors.RED}[✖] Failed to retrieve data. Status: {response.status_code}")
-    except Exception as e:
-        print(f"{Colors.RED}[✖] Connection Error: {e}")
-    
-    input(f"\n{Colors.YELLOW}Press [ENTER] to return to Main Node...")
+                    if sub and '*' not in sub:
+                        subs.add(sub)
+    except Exception:
+        pass
+    print(f"\n{C.C}╭───〔 𝗥𝗲𝘀𝘂𝗹𝘁𝘀 〕")
+    if subs:
+        sub_list = sorted(list(subs))
+        for s in sub_list[:15]:
+            print(f"{C.C}├─ {C.W}{s}")
+        if len(sub_list) > 15:
+            print(f"{C.C}├─ {C.Y}And {len(sub_list) - 15} more...")
+    else:
+        print(f"{C.C}├─ {C.R}Nothing found")
+    print(f"{C.C}╰────────────────────────────")
+    input(f"\n{C.Y}Press ENTER to go back...")
 
-def network_module():
-    show_banner()
-    print(f"{Colors.CYAN}┌───[{Colors.WHITE} TACTICAL NETWORK SCANNER {Colors.CYAN}]")
-    target_ip = input(f"│\n└──► {Colors.YELLOW}Enter Target IP Address: {Colors.WHITE}").strip()
-    
-    if not target_ip:
-        print(f"\n{Colors.RED}[✖] Invalid IP.")
-        time.sleep(2)
+def mod_network():
+    header()
+    print(f"{C.C}╭───〔 𝗧𝗮𝗰𝘁𝗶𝗰𝗮𝗹 𝗡𝗲𝘁𝘄𝗼𝗿𝗸 𝗔𝗻𝗮𝗹𝘆𝘇𝗲𝗿 〕")
+    target = input(f"{C.C}│\n╰──► {C.Y}Enter IP Address: {C.W}").strip()
+    if not target:
         return
-
-    print(f"\n{Colors.GREEN}[+] Initializing Nmap-style stealth scan...")
-    spinner_animation(2, "Mapping network topology")
-    
-    ports = [21, 22, 23, 53, 80, 111, 135, 139, 443, 445, 3306, 8080, 8443]
-    open_ports = []
-
-    print(f"\n{Colors.CYAN}┌───[ {Colors.WHITE}SCAN RESULTS : {target_ip} {Colors.CYAN}]")
+    print(f"\n{C.G}[+] Scanning Network...")
+    ports = [21, 22, 23, 53, 80, 443, 8080]
+    print(f"\n{C.C}╭───〔 𝗦𝗰𝗮𝗻 𝗥𝗲𝘀𝘂𝗹𝘁𝘀 〕")
     for port in ports:
-        sys.stdout.write(f"│ {Colors.YELLOW}Scanning Port {port}... ")
-        sys.stdout.flush()
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(0.5)
-            result = s.connect_ex((target_ip, port))
-            if result == 0:
-                print(f"{Colors.GREEN}OPEN [✔]")
-                open_ports.append(port)
+            if s.connect_ex((target, port)) == 0:
+                print(f"{C.C}├─ {C.W}Port {port:<4} : {C.G}OPEN")
             else:
-                print(f"{Colors.RED}CLOSED")
+                print(f"{C.C}├─ {C.W}Port {port:<4} : {C.R}CLOSED")
             s.close()
-        except KeyboardInterrupt:
-            print(f"\n{Colors.RED}[!] Scan aborted by user.")
-            break
         except Exception:
-            print(f"{Colors.RED}ERROR")
-            
-    print(f"{Colors.CYAN}├──────────────────────────────────────────┤")
-    if open_ports:
-        print(f"{Colors.CYAN}│ {Colors.GREEN}Total Open Ports Found: {len(open_ports)}")
-    else:
-        print(f"{Colors.CYAN}│ {Colors.YELLOW}No critical open ports detected.")
-    print(f"{Colors.CYAN}└──────────────────────────────────────────┘")
+            pass
+    print(f"{C.C}╰────────────────────────────")
+    input(f"\n{C.Y}Press ENTER to go back...")
 
-    input(f"\n{Colors.YELLOW}Press [ENTER] to return to Main Node...")
-
-def node_module():
-    show_banner()
-    print(f"{Colors.CYAN}┌───[{Colors.WHITE} LOCAL NODE MONITOR {Colors.CYAN}]")
-    print(f"│")
-    spinner_animation(2, "Analyzing System Metrics")
-    
-    print(f"\n{Colors.CYAN}┌───[ {Colors.WHITE}SYSTEM HEALTH & INFO {Colors.CYAN}]")
-    print(f"{Colors.CYAN}│ {Colors.YELLOW}Architecture : {Colors.WHITE}{platform.machine()}")
-    print(f"{Colors.CYAN}│ {Colors.YELLOW}Processor    : {Colors.WHITE}{platform.processor() or 'ARM/Unknown'}")
-    print(f"{Colors.CYAN}│ {Colors.YELLOW}OS Release   : {Colors.WHITE}{platform.release()}")
-    
+def mod_system():
+    header()
+    print(f"{C.C}╭───〔 𝗟𝗼𝗰𝗮𝗹 𝗡𝗼𝗱𝗲 𝗠𝗼𝗻𝗶𝘁𝗼𝗿 〕")
+    print(f"{C.C}│")
+    spinner(2, "Checking System")
+    print(f"\n{C.C}╭───〔 𝗦𝘆𝘀𝘁𝗲𝗺 𝗛𝗲𝗮𝗹𝘁𝗵 〕")
+    print(f"{C.C}├─ 𝗢𝗦       : {C.W}{platform.system()}")
+    print(f"{C.C}├─ 𝗩𝗲𝗿𝘀𝗶𝗼𝗻  : {C.W}{platform.release()}")
+    print(f"{C.C}├─ 𝗠𝗮𝗰𝗵𝗶𝗻𝗲  : {C.W}{platform.machine()}")
     try:
-        mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
-        mem_gb = mem_bytes / (1024.**3)
-        print(f"{Colors.CYAN}│ {Colors.YELLOW}Total Memory : {Colors.WHITE}{mem_gb:.2f} GB")
-    except:
-        print(f"{Colors.CYAN}│ {Colors.YELLOW}Total Memory : {Colors.WHITE}Access Denied (Termux Restricted)")
+        cpu = os.cpu_count()
+        print(f"{C.C}├─ 𝗖𝗣𝗨 𝗖𝗼𝗿𝗲𝘀: {C.W}{cpu}")
+    except Exception:
+        pass
+    print(f"{C.C}╰────────────────────────────")
+    input(f"\n{C.Y}Press ENTER to go back...")
 
-    print(f"{Colors.CYAN}├──────────────────────────────────────────┤")
-    print(f"{Colors.CYAN}│ {Colors.GREEN}Node Integrity Check: SECURE")
-    print(f"{Colors.CYAN}└──────────────────────────────────────────┘")
-    
-    input(f"\n{Colors.YELLOW}Press [ENTER] to return to Main Node...")
+def mod_phone():
+    header()
+    print(f"{C.C}╭───〔 𝗣𝗵𝗼𝗻𝗲 𝗡𝘂𝗺𝗯𝗲𝗿 𝗢𝗦𝗜𝗡𝗧 〕")
+    num = input(f"{C.C}│\n╰──► {C.Y}Enter Phone Number (with +): {C.W}").strip()
+    if not num:
+        return
+    print(f"\n{C.C}╭───〔 𝗣𝗵𝗼𝗻𝗲 𝗥𝗲𝘀𝘂𝗹𝘁𝘀 〕")
+    try:
+        p_obj = phonenumbers.parse(num, None)
+        is_valid = phonenumbers.is_valid_number(p_obj)
+        if is_valid:
+            print(f"{C.C}├─ 𝗩𝗮𝗹𝗶𝗱    : {C.G}YES")
+            print(f"{C.C}├─ 𝗖𝗼𝘂𝗻𝘁𝗿𝘆  : {C.W}{geocoder.description_for_number(p_obj, 'en')}")
+            print(f"{C.C}├─ 𝗡𝗲𝘁𝘄𝗼𝗿𝗸  : {C.W}{carrier.name_for_number(p_obj, 'en')}")
+            print(f"{C.C}├─ 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 : {C.W}https://wa.me/{num.replace('+', '')}")
+            print(f"{C.C}├─ 𝗦𝗰𝗮𝗺 𝗖𝗵𝗲𝗰𝗸: {C.B}https://www.google.com/search?q=%22{num.replace('+', '')}%22+scam")
+        else:
+            print(f"{C.C}├─ 𝗩𝗮𝗹𝗶𝗱    : {C.R}NO")
+    except Exception:
+        print(f"{C.C}├─ {C.R}Invalid format. Please use + country code.")
+    print(f"{C.C}╰────────────────────────────")
+    input(f"\n{C.Y}Press ENTER to go back...")
+
+def mod_ip():
+    header()
+    print(f"{C.C}╭───〔 𝗜𝗣 𝗧𝗮𝗿𝗴𝗲𝘁 𝗚𝗲𝗼𝗹𝗼𝗰𝗮𝘁𝗶𝗼𝗻 〕")
+    ip = input(f"{C.C}│\n╰──► {C.Y}Enter IP Address: {C.W}").strip()
+    if not ip:
+        return
+    spinner(2, "Finding location")
+    print(f"\n{C.C}╭───〔 𝗟𝗼𝗰𝗮𝘁𝗶𝗼𝗻 𝗥𝗲𝘀𝘂𝗹𝘁𝘀 〕")
+    try:
+        res = requests.get(f"http://ip-api.com/json/{ip}", timeout=5).json()
+        if res.get("status") == "success":
+            print(f"{C.C}├─ 𝗖𝗼𝘂𝗻𝘁𝗿𝘆  : {C.W}{res.get('country')}")
+            print(f"{C.C}├─ 𝗖𝗶𝘁𝘆     : {C.W}{res.get('city')}")
+            print(f"{C.C}├─ 𝗜𝗦𝗣      : {C.W}{res.get('isp')}")
+            print(f"{C.C}├─ 𝗠𝗮𝗽𝘀     : {C.B}https://www.google.com/maps?q={res.get('lat')},{res.get('lon')}")
+        else:
+            print(f"{C.C}├─ {C.R}Location not found")
+    except Exception:
+        print(f"{C.C}├─ {C.R}Connection Error")
+    print(f"{C.C}╰────────────────────────────")
+    input(f"\n{C.Y}Press ENTER to go back...")
+
+def mod_url():
+    header()
+    print(f"{C.C}╭───〔 𝗠𝗮𝗹𝗶𝗰𝗶𝗼𝘂𝘀 𝗨𝗥𝗟 𝗦𝗰𝗮𝗻𝗻𝗲𝗿 〕")
+    url = input(f"{C.C}│\n╰──► {C.Y}Enter Link: {C.W}").strip()
+    if not url:
+        return
+    spinner(2, "Scanning Link")
+    print(f"\n{C.C}╭───〔 𝗦𝗰𝗮𝗻 𝗥𝗲𝘀𝘂𝗹𝘁𝘀 〕")
+    try:
+        data = {'url': url}
+        res = requests.post("https://urlhaus-api.abuse.ch/v1/url/", data=data, timeout=5).json()
+        if res.get('query_status') == 'ok':
+            print(f"{C.C}├─ 𝗦𝘁𝗮𝘁𝘂𝘀   : {C.R}DANGER (Malware Found)")
+            print(f"{C.C}├─ 𝗧𝗵𝗿𝗲𝗮𝘁   : {C.W}{res.get('threat')}")
+        else:
+            print(f"{C.C}├─ 𝗦𝘁𝗮𝘁𝘂𝘀   : {C.G}SAFE (No records found)")
+    except Exception:
+        print(f"{C.C}├─ {C.R}Error scanning link")
+    print(f"{C.C}╰────────────────────────────")
+    input(f"\n{C.Y}Press ENTER to go back...")
+
+def mod_crypto():
+    header()
+    print(f"{C.C}╭───〔 𝗖𝗿𝘆𝗽𝘁𝗼 𝗪𝗮𝗹𝗹𝗲𝘁 𝗔𝗻𝗮𝗹𝘆𝘇𝗲𝗿 〕")
+    wallet = input(f"{C.C}│\n╰──► {C.Y}Enter BTC Address: {C.W}").strip()
+    if not wallet:
+        return
+    spinner(2, "Checking Blockchain")
+    print(f"\n{C.C}╭───〔 𝗪𝗮𝗹𝗹𝗲𝘁 𝗥𝗲𝘀𝘂𝗹𝘁𝘀 〕")
+    try:
+        res = requests.get(f"https://blockchain.info/rawaddr/{wallet}", timeout=5)
+        if res.status_code == 200:
+            data = res.json()
+            btc = data.get('final_balance', 0) / 100000000
+            print(f"{C.C}├─ 𝗕𝗮𝗹𝗮𝗻𝗰𝗲  : {C.G}{btc} BTC")
+            print(f"{C.C}├─ 𝗧𝗿𝗮𝗻𝘀𝗳𝗲𝗿𝘀: {C.W}{data.get('n_tx')}")
+        else:
+            print(f"{C.C}├─ {C.R}Wallet not found or invalid")
+    except Exception:
+        print(f"{C.C}├─ {C.R}Error connecting to blockchain")
+    print(f"{C.C}╰────────────────────────────")
+    input(f"\n{C.Y}Press ENTER to go back...")
 
 def main_loop():
-    boot_sequence()
+    boot()
     while True:
-        show_banner()
-        print(f"{Colors.CYAN}┌───[ {Colors.WHITE}MAIN OPERATIONS {Colors.CYAN}]")
-        print(f"{Colors.CYAN}│")
-        print(f"{Colors.CYAN}│ {Colors.WHITE}[{Colors.GREEN}1{Colors.WHITE}] {Colors.YELLOW}Reconnaissance & Subdomain Scan")
-        print(f"{Colors.CYAN}│ {Colors.WHITE}[{Colors.GREEN}2{Colors.WHITE}] {Colors.YELLOW}Tactical Network Scanner")
-        print(f"{Colors.CYAN}│ {Colors.WHITE}[{Colors.GREEN}3{Colors.WHITE}] {Colors.YELLOW}Local Node Monitor")
-        print(f"{Colors.CYAN}│ {Colors.WHITE}[{Colors.RED}4{Colors.WHITE}] {Colors.RED}Disconnect & Exit")
-        print(f"{Colors.CYAN}│")
-        
-        choice = input(f"└──► {Colors.WHITE}Select Option: {Colors.GREEN}").strip()
-        
+        header()
+        print(f"{C.C}╭───〔 𝗠𝗔𝗜𝗡 𝗢𝗣𝗘𝗥𝗔𝗧𝗜𝗢𝗡𝗦 〕")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.G}❶ {C.C}𝗗𝗼𝗺𝗮𝗶𝗻 𝗥𝗲𝗰𝗼𝗻𝗻𝗮𝗶𝘀𝘀𝗮𝗻𝗰𝗲")
+        print(f"{C.C}│    └─ {C.W}Web Scanner")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.G}❷ {C.C}𝗧𝗮𝗰𝘁𝗶𝗰𝗮𝗹 𝗡𝗲𝘁𝘄𝗼𝗿𝗸 𝗔𝗻𝗮𝗹𝘆𝘇𝗲𝗿")
+        print(f"{C.C}│    └─ {C.W}LAN Ports")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.G}❸ {C.C}𝗟𝗼𝗰𝗮𝗹 𝗡𝗼𝗱𝗲 𝗠𝗼𝗻𝗶𝘁𝗼𝗿")
+        print(f"{C.C}│    └─ {C.W}System Health")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.G}❹ {C.C}𝗣𝗵𝗼𝗻𝗲 𝗡𝘂𝗺𝗯𝗲𝗿 𝗢𝗦𝗜𝗡𝗧")
+        print(f"{C.C}│    └─ {C.W}Scam & Digital Footprint")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.G}❺ {C.C}𝗜𝗣 𝗧𝗮𝗿𝗴𝗲𝘁 𝗚𝗲𝗼𝗹𝗼𝗰𝗮𝘁𝗶𝗼𝗻")
+        print(f"{C.C}│    └─ {C.W}Trace IP")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.G}❻ {C.C}𝗠𝗮𝗹𝗶𝗰𝗶𝗼𝘂𝘀 𝗨𝗥𝗟 𝗦𝗰𝗮𝗻𝗻𝗲𝗿")
+        print(f"{C.C}│    └─ {C.W}Link Analysis")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.G}❼ {C.C}𝗖𝗿𝘆𝗽𝘁𝗼 𝗪𝗮𝗹𝗹𝗲𝘁 𝗔𝗻𝗮𝗹𝘆𝘇𝗲𝗿")
+        print(f"{C.C}│    └─ {C.W}Blockchain Analysis")
+        print(f"{C.C}│")
+        print(f"{C.C}│ {C.R}❽ {C.C}𝗗𝗶𝘀𝗰𝗼𝗻𝗻𝗲𝗰𝘁 & 𝗘𝘅𝗶𝘁")
+        print(f"{C.C}│")
+        print(f"{C.C}╰────────────────────────────")
+        choice = input(f"\n{C.Y}Select Option: {C.W}").strip()
         if choice == '1':
-            recon_module()
+            mod_domain()
         elif choice == '2':
-            network_module()
+            mod_network()
         elif choice == '3':
-            node_module()
+            mod_system()
         elif choice == '4':
-            print(f"\n{Colors.RED}[!] Disconnecting Node...")
+            mod_phone()
+        elif choice == '5':
+            mod_ip()
+        elif choice == '6':
+            mod_url()
+        elif choice == '7':
+            mod_crypto()
+        elif choice == '8':
+            print(f"\n{C.R}[!] Closing Tool...")
             time.sleep(1)
-            typewriter(f"{Colors.CYAN}Thanks for using Project NEXUS - {Colors.YELLOW}Ranux Dev")
+            type_text(f"{C.C}Thanks for using Project NEXUS - {C.Y}Ranux Dev")
             break
-        else:
-            print(f"\n{Colors.RED}[✖] Invalid Command Sequence. Try Again.")
-            time.sleep(1)
 
 if __name__ == "__main__":
     try:
         main_loop()
     except KeyboardInterrupt:
-        print(f"\n\n{Colors.RED}[!] Force Quit Detected. Shutting down securely...{Colors.RESET}")
+        print(f"\n\n{C.R}[!] Force Quit. Exiting...{C.X}")
         sys.exit(0)
